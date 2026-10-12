@@ -424,6 +424,10 @@ h2.big{font-weight:200;font-size:clamp(30px,4.6vw,68px);line-height:1.05;letter-
 .expstage .expposter{background-size:cover;background-position:center}
 .expstage video{opacity:0;transition:opacity .8s var(--ease);will-change:transform;transform:translateZ(0)}
 .expstage.ready video{opacity:1}
+@supports not (aspect-ratio:1/1){
+  .spinstage{height:0;padding-top:62.5%}
+  .expstage{height:0;padding-top:56.25%}
+}
 .leads{position:absolute;inset:0;z-index:3;pointer-events:none}
 .leads svg{width:100%;height:100%}
 /* the viewBox is kept 1:1 with the stage in pixels, so no vector-effect is
@@ -533,7 +537,7 @@ h2.big{font-weight:200;font-size:clamp(30px,4.6vw,68px);line-height:1.05;letter-
    specificity, so if it came after it would win and phones would get an
    empty hero.
    ============================================================ */
-.statichero{display:none;position:relative;z-index:5;min-height:100svh;align-items:flex-end;
+.statichero{display:none;position:relative;z-index:5;min-height:100vh;min-height:100svh;align-items:flex-end;
   padding:110px var(--gut) clamp(48px,8vw,88px);
   background-size:cover;background-position:center;background-color:var(--panel)}
 .statichero .sh-in{position:relative;width:min(38ch,100%);text-shadow:var(--tshadow)}
@@ -544,23 +548,23 @@ h2.big{font-weight:200;font-size:clamp(30px,4.6vw,68px);line-height:1.05;letter-
   background:linear-gradient(0deg,rgba(250,248,245,.94) 4%,rgba(250,248,245,.72) 40%,rgba(250,248,245,.12) 80%)}
 
 @media (max-width: 720px){
-  .hero{height:auto}.stage{position:relative;height:auto;min-height:100svh}
+  .hero{height:auto}.stage{position:relative;height:auto;min-height:100vh;min-height:100svh}
   .bands,.ringwrap,#hero{display:none}.statichero{display:flex}
 }
 @media (orientation: portrait) and (max-width: 1024px){
-  .hero{height:auto}.stage{position:relative;height:auto;min-height:100svh}
+  .hero{height:auto}.stage{position:relative;height:auto;min-height:100vh;min-height:100svh}
   .bands,.ringwrap,#hero{display:none}.statichero{display:flex}
 }
 @media (orientation: portrait) and (pointer: coarse){
-  .hero{height:auto}.stage{position:relative;height:auto;min-height:100svh}
+  .hero{height:auto}.stage{position:relative;height:auto;min-height:100vh;min-height:100svh}
   .bands,.ringwrap,#hero{display:none}.statichero{display:flex}
 }
 @media (orientation: landscape) and (pointer: coarse) and (max-height: 560px){
-  .hero{height:auto}.stage{position:relative;height:auto;min-height:100svh}
+  .hero{height:auto}.stage{position:relative;height:auto;min-height:100vh;min-height:100svh}
   .bands,.ringwrap,#hero{display:none}.statichero{display:flex}
 }
 @media (prefers-reduced-motion: reduce){
-  .hero{height:auto}.stage{position:relative;height:auto;min-height:100svh}
+  .hero{height:auto}.stage{position:relative;height:auto;min-height:100vh;min-height:100svh}
   .bands,.ringwrap,#hero{display:none}.statichero{display:flex}
 }
 @media (max-height:560px){.ringwrap,.spinhud,.expscroll,.ticker{display:none}}
@@ -979,6 +983,8 @@ var clamp=function(v,lo,hi){return Math.min(hi,Math.max(lo,v));};
 var smoothstep=function(p,e0,e1){var t=clamp((p-e0)/(e1-e0),0,1);return t*t*(3-2*t);};
 function rng(seed){var s=seed>>>0;return function(){s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
 var REDUCED=matchMedia('(prefers-reduced-motion: reduce)');
+/* Safari before 14 has no MediaQueryList.addEventListener, only addListener */
+function onMQ(m,fn){if(m.addEventListener)m.addEventListener('change',fn);else if(m.addListener)m.addListener(fn);}
 
 var stage=document.getElementById('stage');
 var video=document.getElementById('hero');
@@ -1213,7 +1219,7 @@ function applyHeroMode(){
   if(GATES.some(function(q){return matchMedia(q).matches;})){disableScrub();initStaticOnce();}
   else enableScrub();
 }
-GATES.map(function(q){return matchMedia(q);}).forEach(function(m){m.addEventListener('change',applyHeroMode);});
+GATES.map(function(q){return matchMedia(q);}).forEach(function(m){onMQ(m,applyHeroMode);});
 
 /* ---------- entrances ---------- */
 if('IntersectionObserver' in window){
@@ -1533,7 +1539,7 @@ function pinToFinalStates(){
   if(expPin)expPin();
 }
 function unpinFinalStates(){if(window.__fireReset)window.__fireReset();}
-REDUCED.addEventListener('change',function(e){
+onMQ(REDUCED,function(e){
   if(e.matches)pinToFinalStates();
   else applyHeroMode();
 });
@@ -1563,8 +1569,18 @@ document.addEventListener('visibilitychange',function(){
 
 applyHeroMode();
 if(REDUCED.matches)pinToFinalStates();
+window.__scOK=true;
 
 })();
+</script>
+<script>
+/* failsafe: if the main script stopped part way on an older browser,
+   show every section and the still hero instead of a blank page */
+if(!window.__scOK){
+  [].slice.call(document.querySelectorAll('.rv,.reveal')).forEach(function(e){e.classList.add('in');});
+  var sh=document.querySelector('.statichero');
+  if(sh&&!sh.style.backgroundImage)sh.style.backgroundImage="url('assets/hero-still.jpg')";
+}
 </script>
 </body>
 </html>
