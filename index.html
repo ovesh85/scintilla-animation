@@ -423,6 +423,14 @@ h2.big{font-weight:200;font-size:clamp(30px,4.6vw,68px);line-height:1.05;letter-
 .expstage video,.expstage .expposter{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .expstage .expposter{background-size:cover;background-position:center}
 .expstage video{opacity:0;transition:opacity .8s var(--ease);will-change:transform;transform:translateZ(0)}
+/* phones: the scroll hero runs here too, with captions sized for a narrow frame */
+@media (max-width:720px){
+  .bandin,.band.mid .bandin{width:100%;max-width:420px}
+  .bandin h1,.bandin h2{font-size:clamp(30px,8.6vw,44px)}
+  .bandin .sub{font-size:15px}
+  .band::before,.band.mid::before{background:radial-gradient(ellipse 95% 55% at 40% var(--sy,50%),var(--veil) 0%,rgba(250,248,245,.6) 50%,rgba(250,248,245,0) 82%)}
+  .band.mid.top::before{background:radial-gradient(ellipse 95% 45% at 50% 28%,var(--veil) 0%,rgba(250,248,245,.62) 50%,rgba(250,248,245,0) 82%)}
+}
 .expstage.ready video{opacity:1}
 @supports not (aspect-ratio:1/1){
   .spinstage{height:0;padding-top:62.5%}
@@ -547,22 +555,6 @@ h2.big{font-weight:200;font-size:clamp(30px,4.6vw,68px);line-height:1.05;letter-
 .statichero::before{content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(0deg,rgba(250,248,245,.94) 4%,rgba(250,248,245,.72) 40%,rgba(250,248,245,.12) 80%)}
 
-@media (max-width: 720px){
-  .hero{height:auto}.stage{position:relative;height:auto;min-height:100vh;min-height:100svh}
-  .bands,.ringwrap,#hero{display:none}.statichero{display:flex}
-}
-@media (orientation: portrait) and (max-width: 1024px){
-  .hero{height:auto}.stage{position:relative;height:auto;min-height:100vh;min-height:100svh}
-  .bands,.ringwrap,#hero{display:none}.statichero{display:flex}
-}
-@media (orientation: portrait) and (pointer: coarse){
-  .hero{height:auto}.stage{position:relative;height:auto;min-height:100vh;min-height:100svh}
-  .bands,.ringwrap,#hero{display:none}.statichero{display:flex}
-}
-@media (orientation: landscape) and (pointer: coarse) and (max-height: 560px){
-  .hero{height:auto}.stage{position:relative;height:auto;min-height:100vh;min-height:100svh}
-  .bands,.ringwrap,#hero{display:none}.statichero{display:flex}
-}
 @media (prefers-reduced-motion: reduce){
   .hero{height:auto}.stage{position:relative;height:auto;min-height:100vh;min-height:100svh}
   .bands,.ringwrap,#hero{display:none}.statichero{display:flex}
@@ -1195,12 +1187,8 @@ function failVideo(){
   posterLayer.classList.add('on');
 }
 
-/* ---------- THE FIVE STATIC-HERO GATES (identical strings to the CSS) ---------- */
+/* ---------- THE STATIC-HERO GATE (identical string to the CSS) ---------- */
 var GATES=[
-  '(max-width: 720px)',
-  '(orientation: portrait) and (max-width: 1024px)',
-  '(orientation: portrait) and (pointer: coarse)',
-  '(orientation: landscape) and (pointer: coarse) and (max-height: 560px)',
   '(prefers-reduced-motion: reduce)'
 ];
 var staticInit=false;
