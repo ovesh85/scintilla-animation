@@ -983,6 +983,16 @@ var clamp=function(v,lo,hi){return Math.min(hi,Math.max(lo,v));};
 var smoothstep=function(p,e0,e1){var t=clamp((p-e0)/(e1-e0),0,1);return t*t*(3-2*t);};
 function rng(seed){var s=seed>>>0;return function(){s=(s*1664525+1013904223)>>>0;return s/4294967296;};}
 var REDUCED=matchMedia('(prefers-reduced-motion: reduce)');
+/* iOS Safari will not paint a frame for a video that has never played, so
+   seeking alone leaves an empty box over the poster. Play it once, muted,
+   and only call it ready when a frame is actually decoded. */
+function primeVideo(v,cb){
+  var fired=false;
+  function go(){if(fired)return;fired=true;cb();}
+  v.addEventListener('loadeddata',go,{once:true});
+  try{var pr=v.play();if(pr&&pr.then)pr.then(function(){v.pause();}).catch(function(){});}catch(e){}
+  setTimeout(function(){if(v.readyState>=2)go();},4000);
+}
 /* Safari before 14 has no MediaQueryList.addEventListener, only addListener */
 function onMQ(m,fn){if(m.addEventListener)m.addEventListener('change',fn);else if(m.addListener)m.addListener(fn);}
 
@@ -1166,12 +1176,13 @@ function attachBlob(blob){
   if(ring)ring.style.setProperty('--ld',0);
   video.src=URL.createObjectURL(blob);
   video.load();
-  video.addEventListener('canplay',function(){
+  primeVideo(video,function(){
+    video.pause();
     requestSeek(heroProgress()*video.duration);
     stage.classList.add('video-ready');
     if(ringwrap)ringwrap.classList.add('done');
     onScroll();
-  },{once:true});
+  });
 }
 function failVideo(){
   if(ringwrap&&!ringwrap.classList.contains('failed')){
@@ -1359,10 +1370,10 @@ navUpdate();
     pos.style.backgroundImage="url('assets/turn-poster.jpg')";
     fetch('assets/turn.mp4').then(function(r){if(!r.ok)throw 0;return r.blob();}).then(function(b){
       vid.src=URL.createObjectURL(b);vid.load();
-      vid.addEventListener('loadedmetadata',function(){
-        dur=vid.duration||6;ready=true;st.classList.add('ready');seek(0);
+      primeVideo(vid,function(){
+        vid.pause();dur=vid.duration||6;ready=true;st.classList.add('ready');seek(0);
         if(REDUCED.matches)autoTurn();
-      },{once:true});
+      });
     }).catch(function(){});
   }
   if('IntersectionObserver' in window){
@@ -1520,9 +1531,9 @@ var expPin=null;
     if(REDUCED.matches){paintLeads(1);return;}
     fetch('assets/explode.mp4').then(function(r){if(!r.ok)throw 0;return r.blob();}).then(function(b){
       vid.src=URL.createObjectURL(b);vid.load();
-      vid.addEventListener('loadedmetadata',function(){
-        dur=vid.duration||6;ready=true;st.classList.add('ready');onScr();
-      },{once:true});
+      primeVideo(vid,function(){
+        vid.pause();dur=vid.duration||6;ready=true;st.classList.add('ready');onScr();
+      });
     }).catch(function(){});
   }
   if('IntersectionObserver' in window){
